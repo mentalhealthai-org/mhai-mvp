@@ -1,0 +1,15 @@
+# Ref: https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
+blank_issues_enabled: true
+contact_links:
+  - name: 🙋  Usage Questions
+    url: https://github.com/theloveai/loveai-mvp/discussions
+    about: |
+      Use LoveAI MVP's GitHub Discussions to ask "How do I do X with LoveAI MVP?".
+  - name: 📖  Tutorial
+    url: https://github.com/theloveai/loveai-mvp
+    about: |
+      The LoveAI MVP tutorial is continually updated and provides an in depth walkthrough
+      of how to use the latest release of LoveAI MVP.
+  - name: 📝  LoveAI MVP Code of Conduct
+    url: https://github.com/theloveai/loveai-mvp/coc/CODE_OF_CONDUCT.md
+    about: Expectations for how people will interact with each other on LoveAI MVP's GitHub.
