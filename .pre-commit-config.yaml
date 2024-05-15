@@ -16,9 +16,19 @@ repos:
         language: system
         pass_filenames: no
 
-      - id: ruff
-        name: ruff
-        entry: ruff --fix
+      - id: ruff format
+        name: ruff format
+        entry: ruff check
+        language: system
+        pass_filenames: true
+        require_serial: yes
+        files: "./"
+        types:
+          - python
+
+      - id: ruff linter
+        name: ruff linter
+        entry: ruff check
         language: system
         pass_filenames: true
         require_serial: yes

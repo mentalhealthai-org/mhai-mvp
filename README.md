@@ -7,9 +7,10 @@ future app
 
 ## Features
 
-TBD
+## Setup
 
-## Credits
-
-This package was created with
-[scicookie](https://github.com/osl-incubator/scicookie) project template.
+```bash
+$ sudo apt-get update
+$ sudo apt-get install libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
+$ sudo apt-get install ffmpeg libav-tools
+```
