@@ -9,5 +9,5 @@ Why does this file exist, and why __main__? For more info, read:
 
 from loveai_mvp.cli import main
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
