@@ -9,6 +9,8 @@ import yaml
 
 from openai import OpenAI
 
+from loveai_mvp.profiles import get_ai_profile, get_user_profile
+
 
 client = OpenAI()
 
@@ -16,30 +18,10 @@ client = OpenAI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def read_profile(file_path) -> dict[str, Any]:
-    """
-    Read the profile data from a YAML file.
-
-    Parameters
-    ----------
-    file_path : str
-        The path to the YAML file.
-
-    Returns
-    -------
-    dict
-        The profile data.
-    """
-    with open(file_path, "r") as file:
-        profile_data = yaml.safe_load(file)
-    return profile_data
-
-
 def setup() -> list[dict[str, Any]]:
     # Load the AI and user profiles
-    profiles_path = Path(__file__).parent.parent / "data" / "profiles"
-    ai_profile = read_profile(profiles_path / "ai" / "ai.yaml")
-    user_profile = read_profile(profiles_path / "users" / "ivan.yaml")
+    ai_profile = get_ai_profile()
+    user_profile = get_user_profile()
 
     # Create the system message
     system_message = create_system_message(ai_profile, user_profile)

@@ -1,5 +1,6 @@
 name: Love Amano
 age: 30
+gender: female
 interests:
   - video games
   - nintendo switch
@@ -15,3 +16,6 @@ emotional-profile:
   - cool
   - calm
   - lovely
+language:
+  name: Spanish
+  locale: es-MX

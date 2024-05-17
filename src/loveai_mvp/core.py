@@ -11,6 +11,8 @@ import edge_tts
 from edge_tts import VoicesManager
 from openai import OpenAI
 
+from loveai_mvp.profiles import get_ai_profile, get_user_profile
+
 
 # Audio configuration
 FORMAT = pyaudio.paInt16
@@ -60,11 +62,15 @@ def record_audio():
 
 
 def read_from_audio(filename: str = WAVE_OUTPUT_FILENAME) -> str:
+    user_profile = get_user_profile()
+    user_lang = user_profile.get("language", {}).get("locale", "en-US")
+
     recognizer = sr.Recognizer()
+
     with sr.AudioFile(filename) as source:
         audio_data = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(audio_data)
+            text = recognizer.recognize_google(audio_data, language=user_lang)
             print(f"Recognized Text: {text}")
             return text
         except sr.UnknownValueError:
@@ -86,14 +92,18 @@ def play_audio(filename):
 
 
 async def text_to_speech(text, filename="response.mp3"):
-    lang = "en-US"
-    rate = "+10%"
+    ai_profile = get_ai_profile()
+
+    ai_lang = ai_profile.get("language", {}).get("locale", "en-US")
+    ai_gender = ai_profile.get("gender", "female")
+
+    rate = "+0%"  # +10%
     volume = "+0%"
     pitch = "+0Hz"
 
-    params = {"Locale": lang} if "-" in lang else {"Language": lang}
+    params = {"Locale": ai_lang} if "-" in ai_lang else {"Language": ai_lang}
     voices = await VoicesManager.create()
-    voice_options = voices.find(Gender="Female", **params)
+    voice_options = voices.find(Gender=ai_gender.title(), **params)
     # voice = random.choice(voice_options)["Name"]
     voice = voice_options[0]["Name"]
 

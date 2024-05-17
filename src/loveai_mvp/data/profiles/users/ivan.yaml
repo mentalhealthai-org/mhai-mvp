@@ -1,5 +1,6 @@
 name: Ivan Ogasawara
 age: 40
+gender: male
 interests:
   - video games
   - nintendo switch
@@ -15,3 +16,6 @@ emotional-profile:
   - calm
   - workaholic
   - passionate
+language:
+  name: Spanish
+  locale: es-BO
