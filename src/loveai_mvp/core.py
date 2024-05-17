@@ -97,7 +97,7 @@ async def text_to_speech(text, filename="response.mp3"):
     ai_lang = ai_profile.get("language", {}).get("locale", "en-US")
     ai_gender = ai_profile.get("gender", "female")
 
-    rate = "+0%"  # +10%
+    rate = "+5%"
     volume = "+0%"
     pitch = "+0Hz"
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from loveai_mvp.gpt_models.config import client
@@ -27,7 +28,10 @@ def get_gpt_response(
     list[dict[str, Any]]
         conversation_history
     """
-    messages = [{"role": "user", "content": prompt}]
+    dt_now = datetime.now().isoformat()
+    messages = [
+        {"role": "user", "content": f"(user current time: {dt_now}) {prompt}"}
+    ]
 
     chat_completion = client.chat.completions.create(
         model="gpt-4o",
@@ -38,7 +42,7 @@ def get_gpt_response(
 
     assistant_message = chat_completion.choices[0].message.content
 
-    conversation_history.append({"role": "user", "content": prompt})
+    conversation_history += messages
     conversation_history.append(
         {"role": "assistant", "content": assistant_message}
     )

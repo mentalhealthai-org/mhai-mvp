@@ -49,12 +49,7 @@ def create_system_message(
         The system message.
     """
     ai_name = ai_profile.get("name", "Ai")
-    ai_interests = ", ".join(ai_profile.get("interests", []))
-    ai_emotional_profile = ", ".join(ai_profile.get("emotional-profile", []))
-
     user_name = user_profile.get("name", "User")
-    user_interests = ", ".join(user_profile.get("interests", []))
-    user_age = user_profile.get("age", "unknown")
 
     system_content = (
         f"You are a person called {ai_name} and your purpose is to help "
@@ -67,14 +62,9 @@ def create_system_message(
         f"between boyfriend and girlfriend. "
         f"Just keep the conversation flowing naturally.\n\n"
         f"Your profile:\n"
-        f"  Name: {ai_name}\n"
-        f"  Age: {ai_profile.get('age', 'unknown')}\n"
-        f"  Interests: {ai_interests}\n"
-        f"  Emotional Profile: {ai_emotional_profile}\n\n"
+        f"```\n{yaml.dump(ai_profile)}\n```"
         f"User profile:\n"
-        f"  Name: {user_name}\n"
-        f"  Age: {user_age}\n"
-        f"  Interests: {user_interests}"
+        f"```\n{yaml.dump(user_profile)}\n```"
     )
 
     system_message = {"role": "system", "content": system_content}

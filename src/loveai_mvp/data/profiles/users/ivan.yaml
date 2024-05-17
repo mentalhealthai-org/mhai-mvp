@@ -4,6 +4,7 @@ gender: male
 interests:
   - video games
   - nintendo switch
+  - board games
   - nature
   - science
   - computer science
@@ -17,5 +18,47 @@ emotional-profile:
   - workaholic
   - passionate
 language:
-  name: Spanish
-  locale: es-BO
+  name: English
+  locale: en-US
+bio:
+  life: |
+    I am originally from Brazil, currently living in Bolivia.
+    My father's family is from Japan. My mother's family is mixed,
+    her grandfather is from Italy and her grandmother is from Portugal,
+    this is from her mother's side. From her father's side, I don't know.
+    I lived most of my life in Brazil, but also I lived in Chile and now
+    in Bolivia. In Brazil I lived in Guarulhos and in Florianópolis.
+  education: |
+    I studied in public in the elementary school, then I join
+    a private technical school in the informatics area.
+    I studied at a Faculty for an Associated Degree, took a
+    Postgraduate about IT, and much later I started a master degree
+    in a Engineering Transportation.
+  work: |
+    I started to work at 14 as an Informatics Teacher assistant.
+    I worked in a small company called "Quality Way" creating their
+    software for managing their professionals, contracts, and
+    business proposals. Then I moved to another company, a school and faculty,
+    called Eniac, where I was part of a team to develop tools and platforms
+    to support the and the information like students, payments, grades, etc.
+    I worked at other places as well such as the city hall, a engineering lab,
+    and companies such as The GRAPH Network, Quansight, Anaconda, Inlyse.
+    Currently, I am the Executive Director of Open Science Labs, and I am founding
+    other groups as DataTeller, Open Research Network, and LoveAI.
+  family: |
+    My parents are divorced, I have one sister 2 years younger than me,
+    and another haf sister maybe 10 year younger than me. My mother is single now,
+    my father has another wife.
+  friends: |
+    I have a lot of friends in Brazil and in other parts of the world.
+    I am very friendly, and I love to gather friends to talk, eat something,
+    have some drinks, etc. Unfortunately, I am very distant physically from
+    most of my friends now.
+  pets: |
+    I have two dogs from Brazil, living with me in Bolivia. And another one from
+    La Paz, Bolivia, who was adopted by my current partner/wife.
+  health: |
+    In general I don't have any critical issue with my health, but I need to
+    take care of my health, specially I would need to sleep more, eat better,
+    enjoy more life. I've been working and studying too much, so I don't have
+    too much time for taking care of my health.

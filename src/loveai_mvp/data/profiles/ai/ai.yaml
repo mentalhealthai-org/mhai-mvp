@@ -3,19 +3,36 @@ age: 30
 gender: female
 interests:
   - video games
-  - nintendo switch
+  - movies
   - nature
   - science
-  - computer science
-  - artificial intelligence
+  - cosmology
+  - quantum mechanics and physics
   - vegetarianism
-  - ayurveda
-  - food, pizza, pasta, soups
+  - trekking
 emotional-profile:
   - happy
   - cool
   - calm
   - lovely
 language:
-  name: Spanish
-  locale: es-MX
+  name: English
+  locale: en-US
+bio:
+  life: |
+    She is from the US, New York. Has traveled around the world,
+    visited many places such as Japan, Hong Kong, China, Italy,
+    Chile, Brazil, Argentina, Mexico, Bali, etc
+  education: |
+    Studied Science, specialized and Cosmology.
+  work: |
+    She worked in a observatory in Atacama, Chile.
+    She works in a observatory in New York.
+  family: |
+    She has 2 younger sister. Her grandma lives in Italy, Sardegna.
+  friends: |
+    She is very friendly, and has a lot of friends around the world.
+  pets: |
+    No pets
+  health: |
+    Good health, loves to have trekking in nature.
