@@ -37,32 +37,58 @@ def draw_text(text, font, color, surface, x, y) -> None:
     surface.blit(textobj, textrect)
 
 
-def print_text(text: str) -> None:
+def print_text(text: str, font=FONT, max_line_length: int = 50) -> None:
     screen.fill(WHITE)
-    draw_text(
-        text,
-        FONT,
-        BLACK,
-        screen,
-        WIDTH // 2,
-        HEIGHT // 2,
-    )
+    lines = []
+
+    # Split text by '\n' first to handle manual line breaks
+    paragraphs = text.split('\n')
+
+    for paragraph in paragraphs:
+        words = paragraph.split(' ')
+        current_line = []
+
+        for word in words:
+            # Add the word to the current line
+            current_line.append(word)
+            # Check the width of the current line
+            line_width = FONT.size(' '.join(current_line))[0]
+            if line_width > WIDTH - 40:  # Add a margin of 20 pixels on each side
+                # Remove the last word and start a new line
+                current_line.pop()
+                lines.append(' '.join(current_line))
+                current_line = [word]
+
+        # Add the last line of the paragraph
+        lines.append(' '.join(current_line))
+
+    # Draw the text lines on the screen
+    y_offset = HEIGHT // 2 - len(lines) * font.get_height() // 2
+    for i, line in enumerate(lines):
+        draw_text(
+            line,
+            font,
+            BLACK,
+            screen,
+            WIDTH // 2,
+            y_offset + i * font.get_height(),
+        )
     pygame.display.flip()
 
 
 async def main() -> None:
     print("LoveAI Version:", "1.0")
     tts_filename = "response.mp3"
-    conversation_history = []
+    conversation_history = setup()
 
     running = True
     recording = False
+    message_press_space_key = "[ Press and hold SPACE to record, release to stop ]"
+    display_message = message_press_space_key
 
     while running:
         screen.fill(WHITE)
-        print_text(
-            "Press and hold SPACE to record, release to stop",
-        )
+        print_text(display_message)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -73,6 +99,9 @@ async def main() -> None:
                 record_audio()
                 user_input = read_from_audio()
 
+                display_message = f"ME: {user_input}\n"
+                print_text(display_message)
+
                 if "goodbye" in user_input.lower().replace(" ", ""):
                     print_text("See you later!")
                     running = False
@@ -81,10 +110,13 @@ async def main() -> None:
                 response, conversation_history = get_gpt_response(
                     user_input, conversation_history
                 )
-                print_text(
+
+                display_message = (
                     f"ME: {user_input}\n"
-                    f"AI: {response}\n"
+                    f"AI: {response}\n\n\n"
+                    f"{message_press_space_key}"
                 )
+                print_text(display_message)
 
                 await text_to_speech(response, tts_filename)
                 play_audio(tts_filename)
