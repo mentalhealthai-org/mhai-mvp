@@ -18,7 +18,7 @@ repos:
 
       - id: ruff format
         name: ruff format
-        entry: ruff check
+        entry: ruff format
         language: system
         pass_filenames: true
         require_serial: yes

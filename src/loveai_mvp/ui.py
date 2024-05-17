@@ -26,7 +26,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
-EMOJI_SIZE = (64, 64)
+EMOJI_SIZE = (200, 200)
 FONT_SIZE = 36
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -166,29 +166,24 @@ async def main() -> None:
 
                 response_fragments = split_text_by_emoji(response)
 
-                ai_partial_message = "AI: "
-
-                for fragment, em in response_fragments:
-                    ai_partial_message += f"{fragment}\n"
-                    display_message = (
-                        f"ME: {user_input}\n" f"AI: {ai_partial_message}\n\n\n"
-                    )
-                    print_text(display_message)
-
-                    if em:
-                        draw_emoji(
-                            em, screen, WIDTH // 2, HEIGHT // 2, FONT_SIZE
-                        )
-
-                    await text_to_speech(fragment, tts_filename)
-                    play_audio(tts_filename)
-                    os.remove(tts_filename)
+                ai_message = ". ".join(
+                    [msg for (msg, em) in response_fragments]
+                )
 
                 display_message = (
                     f"ME: {user_input}\n"
-                    f"AI: {ai_partial_message}\n\n\n"
+                    f"AI: {ai_message}\n\n\n"
                     f"{message_press_space_key}"
                 )
+                print_text(display_message)
+
+                for fragment, em in response_fragments:
+                    if em:
+                        draw_emoji(em, screen, WIDTH // 2, 30, FONT_SIZE)
+
+                await text_to_speech(ai_message, tts_filename)
+                play_audio(tts_filename)
+                os.remove(tts_filename)
 
                 recording = False
 
