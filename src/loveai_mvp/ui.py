@@ -37,6 +37,19 @@ def draw_text(text, font, color, surface, x, y) -> None:
     surface.blit(textobj, textrect)
 
 
+def print_text(text: str) -> None:
+    screen.fill(WHITE)
+    draw_text(
+        text,
+        FONT,
+        BLACK,
+        screen,
+        WIDTH // 2,
+        HEIGHT // 2,
+    )
+    pygame.display.flip()
+
+
 async def main() -> None:
     print("LoveAI Version:", "1.0")
     tts_filename = "response.mp3"
@@ -47,13 +60,8 @@ async def main() -> None:
 
     while running:
         screen.fill(WHITE)
-        draw_text(
+        print_text(
             "Press and hold SPACE to record, release to stop",
-            FONT,
-            BLACK,
-            screen,
-            WIDTH // 2,
-            HEIGHT // 2,
         )
         pygame.display.flip()
 
@@ -65,15 +73,18 @@ async def main() -> None:
                 record_audio()
                 user_input = read_from_audio()
 
-                if user_input.lower().replace(" ", "") in ["goodbye"]:
-                    print("Conversation ended.")
+                if "goodbye" in user_input.lower().replace(" ", ""):
+                    print_text("See you later!")
                     running = False
                     break
 
                 response, conversation_history = get_gpt_response(
                     user_input, conversation_history
                 )
-                print(f"AI: {response}")
+                print_text(
+                    f"ME: {user_input}\n"
+                    f"AI: {response}\n"
+                )
 
                 await text_to_speech(response, tts_filename)
                 play_audio(tts_filename)
