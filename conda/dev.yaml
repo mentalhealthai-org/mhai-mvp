@@ -9,3 +9,4 @@ dependencies:
   - nodejs # used by semantic-release
   - shellcheck
   - sqlite
+  - pytorch-cpu>=2.3.0
