@@ -28,10 +28,7 @@ def get_gpt_response(
     list[dict[str, Any]]
         conversation_history
     """
-    dt_now = datetime.now().isoformat()
-    messages = [
-        {"role": "user", "content": f"(user current time: {dt_now}) {prompt}"}
-    ]
+    messages = [{"role": "user", "content": prompt}]
 
     chat_completion = client.chat.completions.create(
         model="gpt-4o",

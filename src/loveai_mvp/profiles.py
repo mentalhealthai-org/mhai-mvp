@@ -32,5 +32,5 @@ def get_ai_profile() -> dict[str, Any]:
     return read_profile(PROFILES_PATH / "ai" / "ai.yaml")
 
 
-def get_user_profile() -> dict[str, Any]:
-    return read_profile(PROFILES_PATH / "users" / "ivan.yaml")
+def get_user_profile(username) -> dict[str, Any]:
+    return read_profile(PROFILES_PATH / "users" / f"{username}.yaml")

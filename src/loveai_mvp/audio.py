@@ -94,8 +94,10 @@ def record_audio():
         frames.append(data)
 
 
-def read_from_audio(filename: str = WAVE_OUTPUT_FILENAME) -> str:
-    user_profile = get_user_profile()
+def read_from_audio(
+    username: str, filename: str = WAVE_OUTPUT_FILENAME
+) -> str:
+    user_profile = get_user_profile(username)
     user_lang = user_profile.get("language", {}).get("locale", "en-US")
 
     recognizer = sr.Recognizer()

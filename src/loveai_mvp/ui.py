@@ -4,6 +4,8 @@ import asyncio
 import os
 import re
 
+from datetime import datetime
+
 import pygame
 import pygame_emojis
 
@@ -14,6 +16,7 @@ from loveai_mvp.audio import (
     record_audio,
     text_to_speech,
 )
+from loveai_mvp.db import init_db, save_conversation
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
 
@@ -129,8 +132,10 @@ def split_text_by_emoji(text: str) -> list[str]:
 
 async def main() -> None:
     print("LoveAI Version:", "1.0")
+
+    username = "ivan"  # Set this to the actual username
     tts_filename = "response.mp3"
-    conversation_history = setup()
+    conversation_history, user_id = setup(username)
 
     running = True
     recording = False
@@ -150,15 +155,18 @@ async def main() -> None:
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 recording = True
                 record_audio()
-                user_input = read_from_audio()
+                prompt = read_from_audio(username)
 
-                display_message = f"ME: {user_input}\n"
+                display_message = f"ME: {prompt}\n"
                 print_text(display_message)
 
-                if "goodbye" in user_input.lower().replace(" ", ""):
+                if "goodbye" in prompt.lower().replace(" ", ""):
                     print_text("See you later!")
                     running = False
                     break
+
+                dt_now = datetime.now().isoformat()
+                user_input = f"(user current time: {dt_now}) {prompt}"
 
                 response, conversation_history = get_gpt_response(
                     user_input, conversation_history
@@ -171,7 +179,7 @@ async def main() -> None:
                 )
 
                 display_message = (
-                    f"ME: {user_input}\n"
+                    f"ME: {prompt}\n"
                     f"AI: {ai_message}\n\n\n"
                     f"{message_press_space_key}"
                 )
@@ -185,9 +193,12 @@ async def main() -> None:
                 play_audio(tts_filename)
                 os.remove(tts_filename)
 
+                save_conversation(user_id, user_input, ai_message)
+
                 recording = False
 
 
 def start_ui():
+    init_db()
     asyncio.run(main())
     pygame.quit()

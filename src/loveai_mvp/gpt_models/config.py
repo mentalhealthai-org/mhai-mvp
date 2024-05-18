@@ -9,6 +9,7 @@ import yaml
 
 from openai import OpenAI
 
+from loveai_mvp.db import load_conversation_history, get_user_id
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
 
 
@@ -18,16 +19,25 @@ client = OpenAI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def setup() -> list[dict[str, Any]]:
+def setup(username: str) -> tuple[list[dict[str, Any]], int]:
+    user_id = get_user_id(username)
+
     # Load the AI and user profiles
     ai_profile = get_ai_profile()
-    user_profile = get_user_profile()
+    user_profile = get_user_profile(username)
 
     # Create the system message
     system_message = create_system_message(ai_profile, user_profile)
 
     # Initialize the conversation history with the new system message
-    return [system_message]
+    conversation_history = [system_message]
+
+    # Load conversation history from the database
+    conversation_history.extend(load_conversation_history(user_id))
+
+    print(conversation_history)
+
+    return conversation_history, user_id
 
 
 def create_system_message(
