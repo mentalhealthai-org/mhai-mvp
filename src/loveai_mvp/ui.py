@@ -26,6 +26,7 @@ from loveai_mvp.db import init_db, save_conversation
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
+from loveai_mvp.sentimental import get_emotions, get_sentiment
 from loveai_mvp.utils.text import split_text_by_emoji
 
 
@@ -140,13 +141,15 @@ class LoveAIApp(App):
     def speak_and_save(self, user_input: str, ai_message: str, *args) -> None:
         asyncio.run(self.audio.text_to_speech(ai_message))
 
-        # sentiment = get_sentiment(user_input)
-        # emotions = get_emotions(user_input)
+        sentiment = get_sentiment(user_input)
+        emotions = get_emotions(user_input)
 
         save_conversation(
             self.user_id,
             user_input,
-            ai_message,  # sentiment, str(emotions)
+            ai_message,
+            sentiment,
+            emotions,
         )
         self.play_audio()
         self.label.text = "Ready..."

@@ -24,6 +24,14 @@ def init_db() -> None:
             user_id INTEGER,
             user_input TEXT,
             ai_response TEXT,
+            sentiment_level INTEGER,
+            neutral FLOAT,
+            joy FLOAT,
+            disgust FLOAT,
+            sadness FLOAT,
+            anger FLOAT,
+            surprise FLOAT,
+            fear FLOAT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
@@ -48,15 +56,46 @@ def get_user_id(username: str) -> int:
     return user_id
 
 
-def save_conversation(user_id: int, user_input: str, ai_response: str) -> None:
+def save_conversation(
+    user_id: int,
+    user_input: str,
+    ai_response: str,
+    sentiment_level: int,
+    emotions: dict[str, float],
+) -> None:
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+
     c.execute(
         """
-        INSERT INTO conversations (user_id, user_input, ai_response)
-        VALUES (?, ?, ?)
+        INSERT INTO conversations (
+            user_id,
+            user_input,
+            ai_response,
+            sentiment_level,
+            neutral,
+            joy,
+            disgust,
+            sadness,
+            anger,
+            surprise,
+            fear
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """,
-        (user_id, user_input, ai_response),
+        (
+            user_id,
+            user_input,
+            ai_response,
+            sentiment_level,
+            emotions["neutral"],
+            emotions["joy"],
+            emotions["disgust"],
+            emotions["sadness"],
+            emotions["anger"],
+            emotions["surprise"],
+            emotions["fear"],
+        ),
     )
     conn.commit()
     conn.close()
@@ -80,3 +119,28 @@ def load_conversation_history(user_id: int) -> List[dict[str, Any]]:
         else {"role": "assistant", "content": row[1]}
         for i, row in enumerate(rows)
     ]
+
+
+def load_emotions_and_sentiment_level(user_id: int) -> List[dict[str, Any]]:
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute(
+        """
+        SELECT
+            user_id,
+            sentiment_level,
+            neutral,
+            joy,
+            disgust,
+            sadness,
+            anger,
+            surprise,
+            fear
+        WHERE user_id = ?
+    """,
+        (user_id,),
+    )
+    rows = c.fetchall()
+    conn.close()
+    return rows
