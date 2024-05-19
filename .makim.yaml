@@ -76,6 +76,13 @@ groups:
         env-file: .env
         run: python src/loveai_mvp/cli.py
 
+  webapp:
+    tasks:
+      run:
+        help: "run the app"
+        env-file: .env
+        run: python src/loveai_mvp/dashboard.py
+
   release:
     vars:
       app: |

@@ -116,12 +116,12 @@ class LoveAIApp(App):
 
     def process_audio(self, *args) -> None:
         user_input = self.audio.read_from_audio()
-        if (
-            "goodbye" in user_input.lower().replace(" ", "")
-            or user_input == ""
-        ):
+        if "goodbye" in user_input.lower().replace(" ", ""):
             self.display_message("See you later!")
             self.stop()
+            return
+
+        if user_input == "":
             return
 
         callback = partial(self.get_ai_response, user_input)

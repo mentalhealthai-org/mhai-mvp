@@ -37,6 +37,9 @@ markdown2 = "^2.4.13"
 html2text = "^2024.2.26"
 mistune = "^3.0.2"
 beautifulsoup4 = "^4.12.3"
+dash = "^2.17.0"
+plotly = "^5.22.0"
+pandas = "^2.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.3.2"
