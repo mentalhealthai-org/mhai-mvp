@@ -88,8 +88,16 @@ class LoveAIApp(App):
         Clock.schedule_once(callback, 0)
 
     def display_message(self, message: str) -> None:
+        if message.startswith("ME:"):
+            color = (1, 1, 0.75, 1)  # light yellow
+        elif message.startswith("AI:"):
+            color = (0.53, 0.81, 0.98, 1)  # light blue
+        else:
+            color = (0, 0, 0, 1)  # default black
+
         message_label = Label(
             text=message,
+            color=color,
             size_hint_y=None,
             markup=True,
             height=30,
