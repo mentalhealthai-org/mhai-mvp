@@ -64,7 +64,21 @@ class LoveAIApp(App):
 
         Window.bind(on_resize=self.on_window_resize)
 
+        self.display_last_messages(10)
+
         return self.layout
+
+    def display_last_messages(self, n: int = 10):
+        last_messages = self.conversation_history[-n:]
+
+        for message in last_messages:
+            content = message.get("content", "")
+            role = message.get("role", "")
+
+            if role == "user":
+                self.display_message(f"ME: {content}")
+            elif role == "assistant":
+                self.display_message(f"AI: {content}")
 
     def display_message_callback(
         self, message: str, callback: partial
