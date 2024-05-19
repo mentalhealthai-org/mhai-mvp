@@ -15,6 +15,8 @@ import edge_tts
 from edge_tts import VoicesManager
 from openai import OpenAI
 
+from loveai_mvp.utils.text import markdown_to_plain_text
+
 
 # Audio configuration
 SAMPLE_RATE = 44100
@@ -82,7 +84,7 @@ class AudioAi:
         voice = voice_options[0]["Name"]
 
         communicate = edge_tts.Communicate(
-            text=text,
+            text=markdown_to_plain_text(text),
             voice=voice,
             rate=rate,
             volume=volume,

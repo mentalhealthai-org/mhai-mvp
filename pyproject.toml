@@ -33,6 +33,10 @@ torchvision = {version = "^0.18.0+cpu", source = "pytorch-cpu-src"}
 torchaudio = {version = "^2.3.0+cpu", source = "pytorch-cpu-src"}
 kivy = "^2.3.0"
 sounddevice = "^0.4.6"
+markdown2 = "^2.4.13"
+html2text = "^2024.2.26"
+mistune = "^3.0.2"
+beautifulsoup4 = "^4.12.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.3.2"

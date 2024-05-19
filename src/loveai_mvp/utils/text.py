@@ -1,5 +1,8 @@
 import re
 
+import mistune
+from bs4 import BeautifulSoup
+
 
 def split_text_by_emoji(text: str) -> list[str]:
     emoji_pattern = re.compile(
@@ -36,3 +39,14 @@ def split_text_by_emoji(text: str) -> list[str]:
     for part, em in zip(parts, emojis + [""]):
         result.append((part, em if em else None))
     return result
+
+
+def markdown_to_plain_text(markdown_text: str) -> str:
+    # Convert Markdown to HTML
+    html = mistune.markdown(markdown_text)
+
+    # Parse the HTML and extract plain text
+    soup = BeautifulSoup(html, "html.parser")
+    plain_text = soup.get_text()
+
+    return plain_text.strip()
