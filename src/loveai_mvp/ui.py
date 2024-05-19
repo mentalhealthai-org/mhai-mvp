@@ -22,7 +22,12 @@ from kivy.uix.widget import Widget
 
 from loveai_mvp import __version__
 from loveai_mvp.audio import AudioAi
-from loveai_mvp.db import init_db, save_conversation
+from loveai_mvp.db import (
+    init_db,
+    save_conversation,
+    get_user_id,
+    load_conversation_history,
+)
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
@@ -70,7 +75,8 @@ class LoveAIApp(App):
         return self.layout
 
     def display_last_messages(self, n: int = 10):
-        last_messages = self.conversation_history[-n:]
+        user_id = get_user_id(self.username)
+        last_messages = load_conversation_history(user_id)[-n:]
 
         for message in last_messages:
             content = message.get("content", "")
