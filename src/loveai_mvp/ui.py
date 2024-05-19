@@ -6,91 +6,25 @@ import re
 
 from datetime import datetime
 
-import pygame
-import pygame_emojis
+import kivy
+
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.core.audio import SoundLoader
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.widget import Widget
 
 from loveai_mvp import __version__
-from loveai_mvp.audio import (
-    play_audio,
-    read_from_audio,
-    record_audio,
-    text_to_speech,
-)
+from loveai_mvp.audio import AudioAi
 from loveai_mvp.db import init_db, save_conversation
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
-
-
-# Pygame configuration
-pygame.init()
-
-WIDTH, HEIGHT = 800, 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-EMOJI_SIZE = (200, 200)
-FONT_SIZE = 36
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("LoveAI")
-FONT = pygame.font.Font(None, FONT_SIZE)
-
-
-def draw_text(text, font, color, surface, x, y) -> None:
-    textobj = font.render(text, True, color)
-    textrect = textobj.get_rect()
-    textrect.center = (x, y)
-    surface.blit(textobj, textrect)
-
-
-def print_text(text: str, font=FONT, max_line_length: int = 50) -> None:
-    screen.fill(WHITE)
-    lines = []
-
-    # Split text by '\n' first to handle manual line breaks
-    paragraphs = text.split("\n")
-
-    for paragraph in paragraphs:
-        words = paragraph.split(" ")
-        current_line = []
-
-        for word in words:
-            # Add the word to the current line
-            current_line.append(word)
-            # Check the width of the current line
-            line_width = FONT.size(" ".join(current_line))[0]
-            if (
-                line_width > WIDTH - 40
-            ):  # Add a margin of 20 pixels on each side
-                # Remove the last word and start a new line
-                current_line.pop()
-                lines.append(" ".join(current_line))
-                current_line = [word]
-
-        # Add the last line of the paragraph
-        lines.append(" ".join(current_line))
-
-    # Draw the text lines on the screen
-    y_offset = HEIGHT // 2 - len(lines) * font.get_height() // 2
-    for i, line in enumerate(lines):
-        draw_text(
-            line,
-            font,
-            BLACK,
-            screen,
-            WIDTH // 2,
-            y_offset + i * font.get_height(),
-        )
-    pygame.display.flip()
-
-
-def draw_emoji(emoji_char: str, surface, x, y, size) -> None:
-    emoji_surface = pygame_emojis.load_emoji(emoji_char, size)
-    emoji_rect = emoji_surface.get_rect()
-    emoji_rect.center = (x, y)
-    surface.blit(emoji_surface, emoji_rect)
-    pygame.display.update()
+from loveai_mvp.profiles import get_ai_profile, get_user_profile
 
 
 def split_text_by_emoji(text: str) -> list[str]:
@@ -130,75 +64,116 @@ def split_text_by_emoji(text: str) -> list[str]:
     return result
 
 
-async def main() -> None:
-    print("LoveAI Version:", "1.0")
+class LoveAIApp(App):
+    def build(self):
+        self.username = "ivan"  # Set this to the actual username
+        self.conversation_history, self.user_id = setup(self.username)
 
-    username = "ivan"  # Set this to the actual username
-    tts_filename = "response.mp3"
-    conversation_history, user_id = setup(username)
+        self.layout = BoxLayout(orientation="vertical")
+        self.label = Label(text="LoveAI", size_hint_y=None, height=40)
+        self.scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+        self.messages = GridLayout(cols=1, spacing=10, size_hint_y=None)
+        self.messages.bind(minimum_height=self.messages.setter("height"))
+        self.scroll_view.add_widget(self.messages)
 
-    running = True
-    recording = False
-    message_press_space_key = (
-        "[ Press and hold SPACE to record, release to stop ]"
-    )
-    display_message = message_press_space_key
+        self.record_button = Button(
+            text="Hold to Record", size_hint_y=None, height=50
+        )
+        self.record_button.bind(on_press=self.start_recording)
+        self.record_button.bind(on_release=self.stop_recording)
 
-    while running:
-        screen.fill(WHITE)
-        print_text(display_message)
-        pygame.display.flip()
+        self.layout.add_widget(self.label)
+        self.layout.add_widget(self.scroll_view)
+        self.layout.add_widget(self.record_button)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                recording = True
-                record_audio()
-                prompt = read_from_audio(username)
+        self.audio = AudioAi(
+            user_profile=get_user_profile(username=self.username),
+            ai_profile=get_ai_profile(),
+        )
 
-                display_message = f"ME: {prompt}\n"
-                print_text(display_message)
+        return self.layout
 
-                if "goodbye" in prompt.lower().replace(" ", ""):
-                    print_text("See you later!")
-                    running = False
-                    break
+    def start_recording(self, instance) -> None:
+        self.label.text = "Listening..."
+        self.audio.start_recording()
 
-                dt_now = datetime.now().isoformat()
-                user_input = f"(user current time: {dt_now}) {prompt}"
+    def stop_recording(self, instance) -> None:
+        self.label.text = "Processing..."
+        self.audio.stop_recording()
+        self.process_audio(instance)
 
-                response, conversation_history = get_gpt_response(
-                    user_input, conversation_history
-                )
+    def process_audio(self, instance) -> None:
+        user_input = self.audio.read_from_audio()
+        if (
+            "goodbye" in user_input.lower().replace(" ", "")
+            or user_input == ""
+        ):
+            self.display_message("See you later!")
+            self.stop()
+            return
 
-                response_fragments = split_text_by_emoji(response)
+        self.display_message(f"ME: {user_input}")
+        print("=" * 80)
+        print(user_input)
 
-                ai_message = ". ".join(
-                    [msg for (msg, em) in response_fragments]
-                )
+        response, self.conversation_history = get_gpt_response(
+            user_input, self.conversation_history
+        )
+        print("=" * 80)
+        print(response)
+        response_fragments = split_text_by_emoji(response)
 
-                display_message = (
-                    f"ME: {prompt}\n"
-                    f"AI: {ai_message}\n\n\n"
-                    f"{message_press_space_key}"
-                )
-                print_text(display_message)
+        ai_message = ". ".join([msg for (msg, em) in response_fragments])
+        self.display_message(f"AI: {ai_message}")
 
-                for fragment, em in response_fragments:
-                    if em:
-                        draw_emoji(em, screen, WIDTH // 2, 30, FONT_SIZE)
+        for fragment, em in response_fragments:
+            if em:
+                self.display_message(em, is_emoji=True)
 
-                await text_to_speech(ai_message, tts_filename)
-                play_audio(tts_filename)
-                os.remove(tts_filename)
+        asyncio.run(self.speak_and_save(user_input, ai_message))
 
-                save_conversation(user_id, user_input, ai_message)
+    def display_message(self, message: str, is_emoji: bool = False) -> None:
+        if is_emoji:
+            message_label = Label(
+                text=message,
+                markup=True,
+                size_hint_y=None,
+                height=30,
+                font_size="20sp",
+            )
+        else:
+            message_label = Label(
+                text=message, size_hint_y=None, height=30, font_size="20sp"
+            )
+        self.messages.add_widget(message_label)
+        self.scroll_view.scroll_to(message_label)
 
-                recording = False
+    async def speak_and_save(self, user_input: str, ai_message: str) -> None:
+        await self.audio.text_to_speech(ai_message)
+        self.play_audio()
+
+        # sentiment = get_sentiment(user_input)
+        # emotions = get_emotions(user_input)
+
+        save_conversation(
+            self.user_id,
+            user_input,
+            ai_message,  # sentiment, str(emotions)
+        )
+
+    def play_audio(self) -> None:
+        self.sound = SoundLoader.load(self.audio.ai_audio_path)
+        if self.sound:
+            self.sound.play()
+            Clock.schedule_interval(self.check_audio_state, 0.1)
+
+    def check_audio_state(self, dt) -> None:
+        if not self.sound.state == "play":
+            self.sound.stop()
+            os.remove(self.audio.ai_audio_path)
+            Clock.unschedule(self.check_audio_state)
 
 
-def start_ui():
+def start_ui() -> None:
     init_db()
-    asyncio.run(main())
-    pygame.quit()
+    LoveAIApp().run()

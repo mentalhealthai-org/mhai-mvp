@@ -7,7 +7,7 @@ CHANNELS = 2  # Adjust to your number of channels
 RATE = 44100  # Sample Rate
 CHUNK = 1024  # Block Size
 RECORD_SECONDS = 5  # Record time
-WAVE_OUTPUT_FILENAME = "file.wav"
+WAVE_OUTPUT_FILENAME = "pyaudio.wav"
 
 # Startup pyaudio instance
 audio = pyaudio.PyAudio()
@@ -26,6 +26,7 @@ frames = []
 # Record for RECORD_SECONDS
 for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)
+    print(data)
     frames.append(data)
 
 print("finished recording")

@@ -35,8 +35,6 @@ def setup(username: str) -> tuple[list[dict[str, Any]], int]:
     # Load conversation history from the database
     conversation_history.extend(load_conversation_history(user_id))
 
-    print(conversation_history)
-
     return conversation_history, user_id
 
 
