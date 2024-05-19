@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from loveai_mvp.gpt_models.config import client
+from loveai_mvp.gpt_models.config import client, MAX_TOKENS
 
 
 def get_gpt_response(
@@ -33,7 +33,7 @@ def get_gpt_response(
     chat_completion = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.9,
-        max_tokens=150,
+        max_tokens=MAX_TOKENS,
         messages=conversation_history + messages,
     )
 

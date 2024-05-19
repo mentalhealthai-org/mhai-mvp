@@ -98,7 +98,9 @@ class AudioAi:
             rate=SAMPLE_RATE,
             input=True,
             frames_per_buffer=CHUNK,
+            stream_callback=self.audio_callback,
         )
+        self.stream.start_stream()
 
     def stop_recording(self) -> None:
         self.stream.stop_stream()
@@ -111,14 +113,6 @@ class AudioAi:
         wf.writeframes(b"".join(self.frames))
         wf.close()
 
-    def audio_callback(self, indata, frames, time, status):
-        self.frames.append(indata)
-
-    def record_audio(self, duration: int):
-        print("Recording...")
-        self.start_recording()
-        for _ in range(0, int(SAMPLE_RATE / CHUNK * duration)):
-            data = self.stream.read(CHUNK)
-            self.frames.append(data)
-        self.stop_recording()
-        print("Finished recording.")
+    def audio_callback(self, in_data, frame_count, time_info, status):
+        self.frames.append(in_data)
+        return (in_data, pyaudio.paContinue)

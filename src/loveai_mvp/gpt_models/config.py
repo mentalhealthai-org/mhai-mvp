@@ -17,6 +17,7 @@ client = OpenAI()
 
 # Set up your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MAX_TOKENS = 256
 
 
 def setup(username: str) -> tuple[list[dict[str, Any]], int]:
@@ -68,6 +69,10 @@ def create_system_message(
         f"You should sound natural, like a beloved one talking freely "
         f"and openly. Use chitty chat style, like a conversation "
         f"between boyfriend and girlfriend. "
+        f"Return the content in plain text and, if you want, emoticons as well. "
+        f"Don't use any kind of formatting, neither markdown. "
+        f"Use natural language style. "
+        f"Use max of {MAX_TOKENS} tokens."
         f"Just keep the conversation flowing naturally.\n\n"
         f"Your profile:\n"
         f"```\n{yaml.dump(ai_profile)}\n```"

@@ -5,16 +5,17 @@ import os
 import re
 
 from datetime import datetime
+from functools import partial
 
 import kivy
 
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
+from kivy.core.window import Window
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
@@ -25,53 +26,23 @@ from loveai_mvp.db import init_db, save_conversation
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
-
-
-def split_text_by_emoji(text: str) -> list[str]:
-    emoji_pattern = re.compile(
-        "["
-        "\U0001f600-\U0001f64f"  # emoticons
-        "\U0001f300-\U0001f5ff"  # symbols & pictographs
-        "\U0001f680-\U0001f6ff"  # transport & map symbols
-        "\U0001f1e0-\U0001f1ff"  # flags (iOS)
-        "\U00002500-\U00002bef"  # chinese char
-        "\U00002702-\U000027b0"
-        "\U00002702-\U000027b0"
-        "\U000024c2-\U0001f251"
-        "\U0001f926-\U0001f937"
-        "\U00010000-\U0010ffff"
-        "\u2640-\u2642"
-        "\u2600-\u2b55"
-        "\u200d"
-        "\u23cf"
-        "\u23e9"
-        "\u231a"
-        "\u3030"
-        "\u303d"
-        "\ufe0f"  # dingbats
-        "\u2069"
-        "\u2066"
-        "\u2068"
-        "\u2067"
-        "]+",
-        flags=re.UNICODE,
-    )
-    parts = emoji_pattern.split(text)
-    emojis = emoji_pattern.findall(text)
-    result = []
-    for part, em in zip(parts, emojis + [""]):
-        result.append((part, em if em else None))
-    return result
+from loveai_mvp.utils.text import split_text_by_emoji
 
 
 class LoveAIApp(App):
-    def build(self):
+    def __init__(self, **kwargs):
+        super(LoveAIApp, self).__init__(**kwargs)
+        self.message_labels = []  # To keep track of message labels
+
+    def build(self) -> BoxLayout:
         self.username = "ivan"  # Set this to the actual username
         self.conversation_history, self.user_id = setup(self.username)
 
         self.layout = BoxLayout(orientation="vertical")
         self.label = Label(text="LoveAI", size_hint_y=None, height=40)
-        self.scroll_view = ScrollView(size_hint=(1, 1), do_scroll_x=False)
+        self.scroll_view = ScrollView(
+            size_hint=(1, None), size=(Window.width, Window.height * 0.8)
+        )
         self.messages = GridLayout(cols=1, spacing=10, size_hint_y=None)
         self.messages.bind(minimum_height=self.messages.setter("height"))
         self.scroll_view.add_widget(self.messages)
@@ -91,7 +62,33 @@ class LoveAIApp(App):
             ai_profile=get_ai_profile(),
         )
 
+        Window.bind(on_resize=self.on_window_resize)
+
         return self.layout
+
+    def display_message_callback(
+        self, message: str, callback: partial
+    ) -> None:
+        self.display_message(message)
+        Clock.schedule_once(callback, 0)
+
+    def display_message(self, message: str) -> None:
+        message_label = Label(
+            text=message,
+            size_hint_y=None,
+            markup=True,
+            height=30,
+            text_size=(Window.width * 0.8, None),
+            font_size="20sp",
+        )
+        message_label.bind(
+            texture_size=lambda instance, value: setattr(
+                instance, "height", value[1]
+            )
+        )
+        self.messages.add_widget(message_label)
+        self.message_labels.append(message_label)
+        self.scroll_view.scroll_to(message_label)
 
     def start_recording(self, instance) -> None:
         self.label.text = "Listening..."
@@ -100,9 +97,9 @@ class LoveAIApp(App):
     def stop_recording(self, instance) -> None:
         self.label.text = "Processing..."
         self.audio.stop_recording()
-        self.process_audio(instance)
+        Clock.schedule_once(self.process_audio, 0)
 
-    def process_audio(self, instance) -> None:
+    def process_audio(self, *args) -> None:
         user_input = self.audio.read_from_audio()
         if (
             "goodbye" in user_input.lower().replace(" ", "")
@@ -112,45 +109,22 @@ class LoveAIApp(App):
             self.stop()
             return
 
-        self.display_message(f"ME: {user_input}")
-        print("=" * 80)
-        print(user_input)
+        callback = partial(self.get_ai_response, user_input)
+        self.display_message_callback(f"ME: {user_input}", callback=callback)
 
+    def get_ai_response(self, user_input: str, *args) -> None:
         response, self.conversation_history = get_gpt_response(
             user_input, self.conversation_history
         )
-        print("=" * 80)
-        print(response)
         response_fragments = split_text_by_emoji(response)
 
         ai_message = ". ".join([msg for (msg, em) in response_fragments])
-        self.display_message(f"AI: {ai_message}")
 
-        for fragment, em in response_fragments:
-            if em:
-                self.display_message(em, is_emoji=True)
+        callback = partial(self.speak_and_save, user_input, ai_message)
+        self.display_message_callback(f"AI: {ai_message}", callback=callback)
 
-        asyncio.run(self.speak_and_save(user_input, ai_message))
-
-    def display_message(self, message: str, is_emoji: bool = False) -> None:
-        if is_emoji:
-            message_label = Label(
-                text=message,
-                markup=True,
-                size_hint_y=None,
-                height=30,
-                font_size="20sp",
-            )
-        else:
-            message_label = Label(
-                text=message, size_hint_y=None, height=30, font_size="20sp"
-            )
-        self.messages.add_widget(message_label)
-        self.scroll_view.scroll_to(message_label)
-
-    async def speak_and_save(self, user_input: str, ai_message: str) -> None:
-        await self.audio.text_to_speech(ai_message)
-        self.play_audio()
+    def speak_and_save(self, user_input: str, ai_message: str, *args) -> None:
+        asyncio.run(self.audio.text_to_speech(ai_message))
 
         # sentiment = get_sentiment(user_input)
         # emotions = get_emotions(user_input)
@@ -160,8 +134,11 @@ class LoveAIApp(App):
             user_input,
             ai_message,  # sentiment, str(emotions)
         )
+        self.play_audio()
+        self.label.text = "Ready..."
 
     def play_audio(self) -> None:
+        print(" play audio ".center(80, "="))
         self.sound = SoundLoader.load(self.audio.ai_audio_path)
         if self.sound:
             self.sound.play()
@@ -172,6 +149,17 @@ class LoveAIApp(App):
             self.sound.stop()
             os.remove(self.audio.ai_audio_path)
             Clock.unschedule(self.check_audio_state)
+
+    def on_window_resize(self, window, width, height):
+        self.scroll_view.size = (width, height * 0.8)
+        self.update_message_text_sizes()
+
+    def update_message_text_sizes(self):
+        for label in self.message_labels:
+            label.text_size = (Window.width * 0.8, None)
+            label.height = label.texture_size[
+                1
+            ]  # Update height based on new text size
 
 
 def start_ui() -> None:
