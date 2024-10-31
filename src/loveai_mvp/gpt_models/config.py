@@ -13,8 +13,6 @@ from loveai_mvp.db import load_conversation_history, get_user_id
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
 
 
-client = OpenAI()
-
 # Set up your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MAX_TOKENS = 256

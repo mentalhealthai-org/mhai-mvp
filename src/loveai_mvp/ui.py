@@ -31,7 +31,7 @@ from loveai_mvp.db import (
 from loveai_mvp.gpt_models import setup
 from loveai_mvp.gpt_models.simple import get_gpt_response
 from loveai_mvp.profiles import get_ai_profile, get_user_profile
-from loveai_mvp.sentimental import get_emotions, get_sentiment
+from loveai_mvp.evaluation import get_emotions, get_sentiment
 from loveai_mvp.utils.text import split_text_by_emoji
 
 
